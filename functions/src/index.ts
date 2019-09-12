@@ -1,12 +1,24 @@
 import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+
+
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: 'https://get-hired-516c2.firebaseio.com'
+});
+
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
 //
- export const helloWorld = functions.https.onRequest((request, response) => {
-  response.send("Hello from Firebase!");
+export const helloWorld = functions.https.onRequest((request, response) => {
+  const db =  admin.firestore()
+  db.collection('campaign/react-angular/tests/angular/questions').get().then(function(data) {
+      response.send(data)
+  }).catch(err => {
+      console.log(err)
+  })
 });
-
 
 
 // START-TEST (subject, force) 
