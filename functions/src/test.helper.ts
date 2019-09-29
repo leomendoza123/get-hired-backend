@@ -1,12 +1,9 @@
 import { Question } from "./types";
 import * as functions from "firebase-functions";
 
-export function getRandomQuestion(
-  questions: Question[],
-  usedQuestions: Question[]
-) {
+export function getRandomQuestion(questions: Question[]) {
   const nonAskQuestions = questions.filter(
-     questionDefinition => !usedQuestions.find(used => used.id === questionDefinition.id)
+    questionDefinition => !questionDefinition.answer
   );
   if (nonAskQuestions.length === 0) {
     throw new functions.https.HttpsError(
@@ -14,5 +11,5 @@ export function getRandomQuestion(
       `The test has no more questions.`
     );
   }
-  return nonAskQuestions[Math.floor(Math.random()*nonAskQuestions.length)]
+  return nonAskQuestions[Math.floor(Math.random() * nonAskQuestions.length)];
 }

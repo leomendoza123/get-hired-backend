@@ -8,8 +8,6 @@ export const createTestCallable = functions.https.onCall(
     const currentUserUid = Auth.getUid(context);
     const db = admin.firestore();
 
-    console.log("response ", JSON.stringify(test));
-
     return Auth.checkIfUserIsClientAdmin(currentUserUid, test.client, db).then(
       () => {
         return db
@@ -19,7 +17,6 @@ export const createTestCallable = functions.https.onCall(
           .doc(test.subject)
           .create(test)
           .then(function(response) {
-            console.log("response ", JSON.stringify(response));
             return response;
           });
       }

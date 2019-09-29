@@ -1,14 +1,20 @@
 export interface Answer {
-    id: string;
-    uiId?: number;
-    value: string;
+  id: string;
+  value: string;
+}
+
+export interface AnswerEndPoint {
+  campaign: string;
+  client: string;
+  subject: string;
+  id: string;
 }
 
 export interface Question {
-    id: string;
-    value: string;
-    answers: Answer[];
-    answer?: Answer;
-    optional?: boolean;
-    askedIndex?: number;
+  id: string;
+  value: string;
+  answers: Answer[];
+  answer?: Answer;
+  optional?: boolean;
+  askedIndex?: number;
 }

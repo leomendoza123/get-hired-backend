@@ -10,7 +10,8 @@ admin.initializeApp({
 export { onUserSignUpTrigger } from "./on-user-sign-up.trigger";
 export { startTestCallable } from "./start-test.callable";
 export { createCampaignCallable } from "./create-campaign.callable";
-export { createTestCallable } from "./create-test.callable"
+export { createTestCallable } from "./create-test.callable";
+export { answerQuestionCallable } from "./answer-question.callable";
 
 // ANSWER-QUESTION (Question)
 // return {Question}

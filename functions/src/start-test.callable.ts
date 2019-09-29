@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { Test, TestBase, TestDefinition } from "./types";
+import { Test, TestBase, TestDefinition, Question } from "./types";
 import { Auth } from "./auth.helper";
 import { DocumentSnapshot } from "@google-cloud/firestore";
 import { getRandomQuestion } from "./test.helper";
@@ -16,7 +16,7 @@ export const startTestCallable = functions.https.onCall(
   (
     test: TestBase,
     context: functions.https.CallableContext
-  ): Promise<PromiseLike<any>> => {
+  ): Promise<Question | undefined> => {
     const uid = Auth.getUid(context);
     const db = admin.firestore();
     // get the next question to ask
@@ -65,10 +65,13 @@ function createTest(
   test: TestDefinition,
   uid: string,
   db: FirebaseFirestore.Firestore
-) {
-  const newTest: Test = test;
-  newTest.lastSendQuestion = getRandomQuestion(test.question, []);
-  newTest.startDate = new Date();
+): Promise<Test> {
+  const newTest = {
+    lastSendQuestion: getRandomQuestion(test.question),
+    startDate: new Date(),
+    ...test
+  };
+
   return db
     .doc(
       `client/${test.client}/campaign/${test.campaign}/user/${uid}/test/${test.subject}`

@@ -14,6 +14,6 @@ export interface Test extends TestDefinition {
   finished?: boolean;
   lastSendQuestion?: Question;
   score?: number;
-  startDate?: Date;
+  startDate: Date;
   finishDate?: Date;
 }

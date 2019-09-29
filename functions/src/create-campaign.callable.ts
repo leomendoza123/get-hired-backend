@@ -22,7 +22,6 @@ export const createCampaignCallable = functions.https.onCall(
         .doc(campaign.name)
         .create(campaign)
         .then(function(response) {
-          console.log("response ", JSON.stringify(response));
           return response;
         });
     });
