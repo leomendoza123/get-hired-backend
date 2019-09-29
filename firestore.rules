@@ -1,6 +1,11 @@
 // Allow read/write access to all users under any conditions
 // Warning: **NEVER** use this rule set in production; it allows
 // anyone to overwrite your entire database.
+
+
+// add rules testing https://angularfirebase.com/lessons/testing-firestore-security-rules-with-the-emulator/
+
+
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
