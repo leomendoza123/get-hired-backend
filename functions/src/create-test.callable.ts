@@ -7,6 +7,7 @@ export const createTestCallable = functions.https.onCall(
   (test: CreateTestEndpoint, context: functions.https.CallableContext): PromiseLike<any> => {
     const currentUserUid = Auth.getUid(context);
     const db = admin.firestore();
+    // TODO CHECK JSON structure
 
     return Auth.checkIfUserIsClientAdmin(currentUserUid, test.client, db).then(
       () => {
@@ -33,6 +34,7 @@ createTestCallable({client: "mockClient", campaign: "mockCampaign", subject: "mo
         {
           id: "1",
           value: "Can multiple a Behavioral subject have multiple observers?",
+          expectedAnswerId: "1",
           answers: [
             {
               id: "1",
@@ -54,8 +56,8 @@ createTestCallable({client: "mockClient", campaign: "mockCampaign", subject: "mo
         },
         {
           id: "2",
-          value:
-            "If you want to reduce the total size of your application, improve security and have a faster render what would you use? ",
+          value: "If you want to reduce the total size of your application, improve security and have a faster render what would you use? ",
+          expectedAnswerId: "1",
           answers: [
             {
               id: "1",
@@ -78,6 +80,7 @@ createTestCallable({client: "mockClient", campaign: "mockCampaign", subject: "mo
         {
           id: "3",
           value: "What’s lazy loading?",
+          expectedAnswerId: "1",
           answers: [
             {
               id: "1",

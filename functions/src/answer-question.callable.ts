@@ -70,7 +70,8 @@ export const answerQuestionCallable = functions.https.onCall(
             .update(testInProgress)
             .then(() => {
               // Return the new asked question
-              return testInProgress.lastSendQuestion;
+               delete testInProgress.lastSendQuestion.expectedAnswerId;
+               return testInProgress.lastSendQuestion
             })
             .catch(() => {
               throw new functions.https.HttpsError(

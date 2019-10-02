@@ -2,7 +2,12 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { Auth } from "./auth.helper";
 import { getFilterQuestions } from "./test.helper";
-import { TestInProgress, TestFinished, CreateTestEndpoint } from "./types";
+import {
+  TestInProgress,
+  TestFinished,
+  CreateTestEndpoint,
+  QuestionAnswered
+} from "./types";
 
 export const finishTestCallable = functions.https.onCall(
   (test: CreateTestEndpoint, context: functions.https.CallableContext) => {
@@ -50,12 +55,17 @@ export const finishTestCallable = functions.https.onCall(
           const questions = getFilterQuestions(testOnDatabase.question, true);
           questions.forEach(question => {
             numberAnswerQuestions++;
-            if (question.id === question.expectedAnswerId) {
+            if (
+              question.expectedAnswerId &&
+              (question as QuestionAnswered).answer.id ===
+                question.expectedAnswerId
+            ) {
               correctAnswers++;
             }
           });
 
           // Create the finished test object
+          console.log(correctAnswers, "--", numberAnswerQuestions);
 
           const testToFinish: TestFinished = {
             score: correctAnswers / numberAnswerQuestions,
@@ -66,7 +76,6 @@ export const finishTestCallable = functions.https.onCall(
             client: testInProgress.client,
             campaign: testInProgress.campaign,
             subject: testInProgress.subject
-
           };
           // Save the test as finished
           return db
@@ -77,7 +86,9 @@ export const finishTestCallable = functions.https.onCall(
             .then(() => {
               // Save the test as finished
               return db
-                .collection(`person/${uid}/test/${test.campaign}/${test.subject}`)
+                .collection(
+                  `person/${uid}/test/${test.campaign}/${test.subject}`
+                )
                 .add(testToFinish)
                 .then(() => {
                   return testToFinish.finished;

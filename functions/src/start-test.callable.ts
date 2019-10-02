@@ -28,6 +28,7 @@ export const startTestCallable = functions.https.onCall(
     return getTestDefinition(test, db).then(testDefinition =>
       createTest(testDefinition, uid, db).then(value => {
         const { lastSendQuestion } = value;
+        delete lastSendQuestion.expectedAnswerId
         return lastSendQuestion;
       })
     );

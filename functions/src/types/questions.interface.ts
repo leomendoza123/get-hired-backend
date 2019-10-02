@@ -14,14 +14,14 @@ export interface QuestionDefinition {
   id: string;
   value: string;
   answers: Answer[];
-  expectedAnswerId: string;
+  expectedAnswerId?: string;
 }
 
 export interface QuestionAsked extends QuestionDefinition {
   optional: boolean
 }
 
-export interface QuestionAnswered extends QuestionAsked {
+export interface QuestionAnswered extends QuestionDefinition {
     answer: Answer
 }
 
