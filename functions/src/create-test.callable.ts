@@ -1,10 +1,10 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { Test } from "./types";
 import { Auth } from "./auth.helper";
+import { CreateTestEndpoint } from "./types";
 
 export const createTestCallable = functions.https.onCall(
-  (test: Test, context: functions.https.CallableContext): PromiseLike<any> => {
+  (test: CreateTestEndpoint, context: functions.https.CallableContext): PromiseLike<any> => {
     const currentUserUid = Auth.getUid(context);
     const db = admin.firestore();
 
@@ -27,7 +27,7 @@ export const createTestCallable = functions.https.onCall(
 /* 
 
 createTestCallable({client: "mockClient", campaign: "mockCampaign", subject: "mockSubject", 
-
+      requiredAmountAnswers : 2,
       question:
       [
         {

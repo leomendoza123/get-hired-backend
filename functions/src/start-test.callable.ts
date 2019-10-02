@@ -1,6 +1,11 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { Test, TestBase, TestDefinition, Question } from "./types";
+import {
+  TestDefinition,
+  CreateTestEndpoint,
+  TestInProgress,
+  QuestionAsked
+} from "./types";
 import { Auth } from "./auth.helper";
 import { DocumentSnapshot } from "@google-cloud/firestore";
 import { getRandomQuestion } from "./test.helper";
@@ -14,14 +19,17 @@ import { getRandomQuestion } from "./test.helper";
 
 export const startTestCallable = functions.https.onCall(
   (
-    test: TestBase,
+    test: CreateTestEndpoint,
     context: functions.https.CallableContext
-  ): Promise<Question | undefined> => {
+  ): Promise<QuestionAsked> => {
     const uid = Auth.getUid(context);
     const db = admin.firestore();
     // get the next question to ask
     return getTestDefinition(test, db).then(testDefinition =>
-      createTest(testDefinition, uid, db).then(value => value.lastSendQuestion)
+      createTest(testDefinition, uid, db).then(value => {
+        const { lastSendQuestion } = value;
+        return lastSendQuestion;
+      })
     );
     // create a new test for the user
   }
@@ -32,7 +40,7 @@ export const startTestCallable = functions.https.onCall(
 */
 
 function getTestDefinition(
-  test: TestBase,
+  test: CreateTestEndpoint,
   db: FirebaseFirestore.Firestore
 ): Promise<TestDefinition> {
   if (!test.campaign || !test.subject || !test.client) {
@@ -62,33 +70,38 @@ function getTestDefinition(
 }
 
 function createTest(
-  test: TestDefinition,
+  testDefinition: TestDefinition,
   uid: string,
   db: FirebaseFirestore.Firestore
-): Promise<Test> {
-  const newTest = {
-    lastSendQuestion: getRandomQuestion(test.question),
+): Promise<TestInProgress> {
+  const newTest: TestInProgress = {
+    canFinish: false,
+    lastSendQuestion: {
+      optional: testDefinition.requiredAmountAnswers <= 0,
+      ... getRandomQuestion(testDefinition.question)
+    },
     startDate: new Date(),
-    ...test
+    ...testDefinition
   };
 
   return db
     .doc(
-      `client/${test.client}/campaign/${test.campaign}/user/${uid}/test/${test.subject}`
+      `client/${newTest.client}/campaign/${newTest.campaign}/user/${uid}/test/${newTest.subject}`
     )
-    .create(test)
+    .create(newTest)
     .then(() => {
       return newTest;
     })
-    .catch(value => {
+    .catch(error => {
       /// An error was trow because the document already existed
+      // returns existing test
       return db
         .doc(
-          `client/${test.client}/campaign/${test.campaign}/user/${uid}/test/${test.subject}`
+          `client/${newTest.client}/campaign/${newTest.campaign}/user/${uid}/test/${newTest.subject}`
         )
         .get()
         .then(value => {
-          const existingTest = value.data() as Test;
+          const existingTest = value.data() as TestInProgress;
           // The existing document is returned
           if (existingTest) {
             return existingTest;

@@ -1,9 +1,9 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { Test } from "./types";
 import { Auth } from "./auth.helper";
-import { AnswerEndPoint } from "./types/questions.interface";
-import { getRandomQuestion } from "./test.helper";
+import { AnswerEndPoint, QuestionAnswered } from "./types/questions.interface";
+import { getRandomQuestion, getFilterQuestions } from "./test.helper";
+import { TestInProgress } from "./types";
 
 export const answerQuestionCallable = functions.https.onCall(
   (answer: AnswerEndPoint, context: functions.https.CallableContext) => {
@@ -23,62 +23,61 @@ export const answerQuestionCallable = functions.https.onCall(
       )
       .get()
       .then(test => {
-        const data: Test = test.data() as Test;
+        const data = test.data();
 
-        if (data) {
-          if (data.lastSendQuestion) {
-            const lastSendQuestionId = data.lastSendQuestion.id;
-            // Set the answer to the lastSendQuestion
-            data.question.forEach(question => {
-              if (question.id === lastSendQuestionId) {
-                /// CHECK if the answer is valid
-                const matchIdAnswer = question.answers.find(
-                  possibleAnswer => possibleAnswer.id === answer.id
-                );
-                if (matchIdAnswer) {
-                  question.answer = matchIdAnswer;
-                } else {
-                  throw new functions.https.HttpsError(
-                    "invalid-argument",
-                    `The answer ID "${answer.id}" is not valid for the question "${question.value}"`
-                  );
-                }
-              }
-            });
-            // Update the last send question with a new one
-            try {
-              data.lastSendQuestion = getRandomQuestion(data.question);
-            } catch {
-              data.lastSendQuestion = undefined;
-            }
-
-            // Save the questions with the answer and the new asked question
-            return db
-              .doc(
-                `client/${answer.client}/campaign/${answer.campaign}/user/${uid}/test/${answer.subject}`
-              )
-              .update({
-                lastSendQuestion: data.lastSendQuestion
-                  ? data.lastSendQuestion
-                  : null,
-                question: data.question
-              })
-              .then(() => {
-                // Return the new asked question
-                return data.lastSendQuestion;
-              })
-              .catch(() => {
+        if (data && !(data as TestInProgress).lastSendQuestion) {
+          throw new functions.https.HttpsError(
+            "not-found",
+            `The test "${answer.client}-${answer.campaign}-${answer.subject}" has not questions waiting for an answer`
+          );
+        } else if (data) {
+          const testInProgress = data as TestInProgress;
+          const lastSendQuestionId = testInProgress.lastSendQuestion.id;
+          // Set the answer to the lastSendQuestion
+          testInProgress.question.forEach(question => {
+            if (question.id === lastSendQuestionId) {
+              /// CHECK if the answer is x  valid
+              const matchIdAnswer = question.answers.find(
+                possibleAnswer => possibleAnswer.id === answer.id
+              );
+              if (matchIdAnswer) {
+                (question as QuestionAnswered).answer = matchIdAnswer;
+              } else {
                 throw new functions.https.HttpsError(
-                  "not-found",
-                  "There was a problem saving your answer"
+                  "invalid-argument",
+                  `The answer ID "${answer.id}" is not valid for the question "${question.value}"`
                 );
-              });
-          } else {
-            throw new functions.https.HttpsError(
-              "not-found",
-              `The test "${answer.client}-${answer.campaign}-${answer.subject}" has not questions waiting for an answer`
-            );
-          }
+              }
+            }
+          });
+          // Review if already answered the minimum amount of questions
+          testInProgress.canFinish =
+            testInProgress.requiredAmountAnswers <=
+            getFilterQuestions(testInProgress.question, true).length;
+
+          // Update the last send question with a new one
+          testInProgress.lastSendQuestion = {
+            optional: testInProgress.canFinish,
+            ...getRandomQuestion(testInProgress.question)
+          };
+          testInProgress.lastSendQuestion.optional = testInProgress.canFinish;
+
+          // Save the questions with the answer and the new asked question
+          return db
+            .doc(
+              `client/${answer.client}/campaign/${answer.campaign}/user/${uid}/test/${answer.subject}`
+            )
+            .update(testInProgress)
+            .then(() => {
+              // Return the new asked question
+              return testInProgress.lastSendQuestion;
+            })
+            .catch(() => {
+              throw new functions.https.HttpsError(
+                "not-found",
+                "There was a problem saving your answer"
+              );
+            });
         } else {
           throw new functions.https.HttpsError(
             "not-found",
@@ -90,5 +89,5 @@ export const answerQuestionCallable = functions.https.onCall(
 );
 
 /*
-  answerQuestionCallable({client: "mockClient", campaign: "mockCampaign",subject: "mockSubject", id: "000"})
+  answerQuestionCallable({client: "mockClient", campaign: "mockCampaign",subject: "mockSubject", id: "1"})
 */

@@ -2,22 +2,26 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import {Person} from "./types"
-
+import { Person } from "./types";
+import { Auth } from "./auth.helper";
 
 export const onUserSignUpTrigger = functions.auth
   .user()
   .onCreate((createdUser: admin.auth.UserRecord) => {
+    if (Auth.useMockUser) {
+      // tslint:disable-next-line:no-parameter-reassignment
+      createdUser = Auth.userRecord;
+    }
 
     const db = admin.firestore();
 
     // Creates a Person object with the collected data
-    const user: Person = {
-      phone: createdUser.phoneNumber || undefined,
-      email: createdUser.email || undefined
-    }
+    const user: Person = {};
+    createdUser.phoneNumber ? (user.phone = createdUser.phoneNumber) : null;
+    createdUser.email ? (user.email = createdUser.email) : null;
 
-    return db.collection("user")
+    return db
+      .collection("person")
       .doc(createdUser.uid)
       .create(user)
       .then(value => {

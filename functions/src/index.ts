@@ -12,19 +12,7 @@ export { startTestCallable } from "./start-test.callable";
 export { createCampaignCallable } from "./create-campaign.callable";
 export { createTestCallable } from "./create-test.callable";
 export { answerQuestionCallable } from "./answer-question.callable";
-
-// ANSWER-QUESTION (Question)
-// return {Question}
-//
-// verify the object is valid
-// verify the question and answer exists
-// save question on the test object
-// save send question as last asked question
-
-// FINISH-TEST ()
-// return Person
-//
-// verify that is possible to finish the test
+export { finishTestCallable } from "./finish-test.callable";
 
 // UPDATE-USER-DATA (Person):
 // return Person

@@ -1,5 +1,5 @@
-export {Question, Answer} from "./questions.interface";
-export {Person} from "./person.interface"
-export * from './test.interface'
-export { Client } from './client.interface'
-export { Campaign } from './campaign.interface'
+export * from "./questions.interface";
+export * from "./person.interface";
+export * from "./test.interface";
+export * from "./client.interface";
+export * from "./campaign.interface";

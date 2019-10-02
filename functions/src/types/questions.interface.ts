@@ -10,11 +10,19 @@ export interface AnswerEndPoint {
   id: string;
 }
 
-export interface Question {
+export interface QuestionDefinition {
   id: string;
   value: string;
   answers: Answer[];
-  answer?: Answer;
-  optional?: boolean;
-  askedIndex?: number;
+  expectedAnswerId: string;
 }
+
+export interface QuestionAsked extends QuestionDefinition {
+  optional: boolean
+}
+
+export interface QuestionAnswered extends QuestionAsked {
+    answer: Answer
+}
+
+export type MightBeAnsweredOrJustDefine = QuestionAnswered | QuestionDefinition;

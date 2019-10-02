@@ -1,8 +1,8 @@
-import { Test } from "./test.interface";
+import { TestDefinition } from "./test.interface";
 
 export interface Campaign {
-    name: "";
-    test: Test[];
-    definedTest: Test[];
-    client: string;
+  name: "";
+  test: TestDefinition[];
+  definedTest: TestDefinition[];
+  client: string;
 }
