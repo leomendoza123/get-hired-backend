@@ -28,7 +28,7 @@ export const answerQuestionCallable = functions.https.onCall(
         if (data && !(data as TestInProgress).lastSendQuestion) {
           throw new functions.https.HttpsError(
             "not-found",
-            `The test "${answer.client}-${answer.campaign}-${answer.subject}" has not questions waiting for an answer`
+            `The test "${answer.client}-${answer.campaign}-${answer.subject}" for the user ${uid} has not questions waiting for an answer`
           );
         } else if (data) {
           const testInProgress = data as TestInProgress;
@@ -82,7 +82,7 @@ export const answerQuestionCallable = functions.https.onCall(
         } else {
           throw new functions.https.HttpsError(
             "not-found",
-            `The test "${answer.client}-${answer.campaign}-${answer.subject}" was not found, did you start it?`
+            `The test "${answer.client}-${answer.campaign}-${answer.subject}" for the user ${uid} was not found, did you start it?`
           );
         }
       });

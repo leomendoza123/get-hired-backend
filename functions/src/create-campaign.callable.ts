@@ -1,11 +1,11 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { Auth } from "./auth.helper";
-import { Campaign } from "./types/campaign.interface";
+import { CreateCampaignEndpoint } from "./types/campaign.interface";
 
 export const createCampaignCallable = functions.https.onCall(
   (
-    campaign: Campaign,
+    campaign: CreateCampaignEndpoint,
     context: functions.https.CallableContext
   ): PromiseLike<any> => {
       

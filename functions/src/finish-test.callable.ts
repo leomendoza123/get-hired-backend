@@ -64,9 +64,6 @@ export const finishTestCallable = functions.https.onCall(
             }
           });
 
-          // Create the finished test object
-          console.log(correctAnswers, "--", numberAnswerQuestions);
-
           const testToFinish: TestFinished = {
             score: correctAnswers / numberAnswerQuestions,
             finished: new Date(),
@@ -98,7 +95,3 @@ export const finishTestCallable = functions.https.onCall(
       });
   }
 );
-
-/*
-  finishTestCallable({client: "mockClient", campaign: "mockCampaign",subject: "mockSubject"})
-*/

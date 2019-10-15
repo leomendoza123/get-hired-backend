@@ -5,3 +5,7 @@ export interface Client {
     campaign: Campaign[];
     admin: string [];
 }
+
+export interface CreateClientEndpoint {
+    name: string;
+}

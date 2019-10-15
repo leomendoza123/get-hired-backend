@@ -1,11 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import {
-  TestDefinition,
-  CreateTestEndpoint,
-  TestInProgress,
-  QuestionAsked
-} from "./types";
+import { StartTestEndpoint, TestInProgress, QuestionAsked, CreateTestEndpoint } from "./types";
 import { Auth } from "./auth.helper";
 import { DocumentSnapshot } from "@google-cloud/firestore";
 import { getRandomQuestion } from "./test.helper";
@@ -19,7 +14,7 @@ import { getRandomQuestion } from "./test.helper";
 
 export const startTestCallable = functions.https.onCall(
   (
-    test: CreateTestEndpoint,
+    test: StartTestEndpoint,
     context: functions.https.CallableContext
   ): Promise<QuestionAsked> => {
     const uid = Auth.getUid(context);
@@ -28,7 +23,7 @@ export const startTestCallable = functions.https.onCall(
     return getTestDefinition(test, db).then(testDefinition =>
       createTest(testDefinition, uid, db).then(value => {
         const { lastSendQuestion } = value;
-        delete lastSendQuestion.expectedAnswerId
+        delete lastSendQuestion.expectedAnswerId;
         return lastSendQuestion;
       })
     );
@@ -41,9 +36,9 @@ export const startTestCallable = functions.https.onCall(
 */
 
 function getTestDefinition(
-  test: CreateTestEndpoint,
+  test: StartTestEndpoint,
   db: FirebaseFirestore.Firestore
-): Promise<TestDefinition> {
+): Promise<CreateTestEndpoint> {
   if (!test.campaign || !test.subject || !test.client) {
     throw new functions.https.HttpsError(
       "invalid-argument",
@@ -58,7 +53,7 @@ function getTestDefinition(
     .then((value: DocumentSnapshot) => {
       const data = value.data();
       if (data) {
-        return data as TestDefinition;
+        return data as CreateTestEndpoint;
       } else {
         throw new functions.https.HttpsError(
           "not-found",
@@ -71,7 +66,7 @@ function getTestDefinition(
 }
 
 function createTest(
-  testDefinition: TestDefinition,
+  testDefinition: CreateTestEndpoint,
   uid: string,
   db: FirebaseFirestore.Firestore
 ): Promise<TestInProgress> {
@@ -79,7 +74,7 @@ function createTest(
     canFinish: false,
     lastSendQuestion: {
       optional: testDefinition.requiredAmountAnswers <= 0,
-      ... getRandomQuestion(testDefinition.question)
+      ...getRandomQuestion(testDefinition.question)
     },
     startDate: new Date(),
     ...testDefinition
